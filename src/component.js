@@ -2,10 +2,10 @@ import loadCSS from './loadcss';
 
 const global = window;
 const define = (window && window.define) || define;
-const dependencies = ['module', 'js/qlik'];
+const dependencies = ['module', 'js/qlik', 'general.utils/drag-and-drop-service'];
 
 define(dependencies,
-  function(module, qlik){
+  function(module, qlik, qlikDragDropService){
     console.log('load!', qlik);
     const ROOT_URI = module.uri.split('/').slice(0, -1).join('/');
     const DEPENDENCIES_TO_LOAD = {
@@ -15,8 +15,8 @@ define(dependencies,
 
     let initialProperties = require('./initialProperties');
     let definition = require('./definition');
+    let paintMethod = require('./components/main');
     let {lazyLoader, isDependeciesLoaded} = require('./lazyLoad');
-    let paintMethod = require('./paint');
 
     const injectAndCallPaintMethod = function(context, method, ...args) {
           context.paint = method;
@@ -30,6 +30,14 @@ define(dependencies,
 
     let paint = function ($element, layout) {
       let self = this;
+
+      // injecting some services through layout object
+      if(layout) {
+        if(!layout.services) layout.services = {};
+        layout.services.qlik = qlik;
+        layout.services.qlikDragDropService = qlikDragDropService;
+      }
+
       if(!isDependeciesLoaded(global, DEPENDENCIES_TO_LOAD))
         lazyLoad(self, paintMethod, $element, layout);
       else
@@ -39,7 +47,10 @@ define(dependencies,
     return {
       initialProperties,
       definition,
-      paint
+      paint,
+      snapshot: {
+        canTakeSnapshot : true
+      }
     }
   }
 );
