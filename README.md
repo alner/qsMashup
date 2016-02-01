@@ -1,6 +1,5 @@
-# Qlik Sense visualization template (ES2015 + BABEL + WebPack + GulpJS)
+# QS Mashup (under development)
 
-Supports ES2015 (BABEL), bundling multiple modules (WEBPACK), hot rebuilds and browser refresh in response to file modifications.
 
 ## Installation
 
