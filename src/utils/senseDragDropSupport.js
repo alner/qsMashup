@@ -1,4 +1,5 @@
 import React from 'react';
+import isEqual from 'lodash.isequal';
 import Component from '../components/base';
 
 // used in the DragDropSupport below
@@ -93,7 +94,6 @@ export default function DragDropSupport(spec = {}) {
       }
 
       componentDidUpdate() {
-        this.setupDragDropRect();
         this.injectObject();
         this.repaintObject();
       }
@@ -149,8 +149,11 @@ export default function DragDropSupport(spec = {}) {
 
       repaintObject(){
         if(this.state.object) {
-
-          this.qlik.resize(this.state.object);
+          let r = this.getRect();
+          if(!isEqual(this.cellRect, r)) {
+            this.setupDragDropRect();
+            this.qlik.resize(this.state.object);
+          }
         }
       }
 

@@ -17,7 +17,8 @@
   "dependencies": {
     "babel-runtime": "^5.8.20",
     "less-plugin-autoprefix": "^1.5.1",
-    "react": "^0.13.3"
+    "lodash.isequal": "^4.0.0",
+    "react": "^0.14.7"
   },
   "devDependencies": {
     "babel": "^5.8.21",

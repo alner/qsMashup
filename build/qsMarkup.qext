@@ -1,6 +1,6 @@
 {
-  "name" : "Sense Markup",
-  "description" : "Sense Markup project",
+  "name" : "Simple Sense Mashup",
+  "description" : "Sense Mashup project",
   "preview": "preview.png",
   "icon" : "extension",
   "type" : "visualization",

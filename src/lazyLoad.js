@@ -15,7 +15,7 @@ export function lazyLoader(context, load, dependencies, callback) {
     }
 }
 
-export function isDependeciesLoaded (context, dependencies)  {
+export function isDependenciesLoaded (context, dependencies)  {
   return Object.keys(dependencies).reduce((prevVal, currVal) => {
     return prevVal && context[currVal];
   }, true)

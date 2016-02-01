@@ -6,7 +6,6 @@ const dependencies = ['module', 'js/qlik', 'general.utils/drag-and-drop-service'
 
 define(dependencies,
   function(module, qlik, qlikDragDropService){
-    console.log('load!', qlik);
     const ROOT_URI = module.uri.split('/').slice(0, -1).join('/');
     const DEPENDENCIES_TO_LOAD = {
       React: `${ROOT_URI}/vendors/react.min`
@@ -16,7 +15,7 @@ define(dependencies,
     let initialProperties = require('./initialProperties');
     let definition = require('./definition');
     let paintMethod = require('./components/main');
-    let {lazyLoader, isDependeciesLoaded} = require('./lazyLoad');
+    let {lazyLoader, isDependenciesLoaded} = require('./lazyLoad');
 
     const injectAndCallPaintMethod = function(context, method, ...args) {
           context.paint = method;
@@ -38,7 +37,7 @@ define(dependencies,
         layout.services.qlikDragDropService = qlikDragDropService;
       }
 
-      if(!isDependeciesLoaded(global, DEPENDENCIES_TO_LOAD))
+      if(!isDependenciesLoaded(global, DEPENDENCIES_TO_LOAD))
         lazyLoad(self, paintMethod, $element, layout);
       else
         injectAndCallPaintMethod(self, paintMethod, $element, layout);
