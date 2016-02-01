@@ -14,7 +14,7 @@ define(dependencies,
 
     let initialProperties = require('./initialProperties');
     let definition = require('./definition');
-    let paintMethod = require('./components/main');
+    let {main: paintMethod, destroy} = require('./components/main');
     let {lazyLoader, isDependenciesLoaded} = require('./lazyLoad');
 
     const injectAndCallPaintMethod = function(context, method, ...args) {
@@ -47,6 +47,7 @@ define(dependencies,
       initialProperties,
       definition,
       paint,
+      destroy,
       snapshot: {
         canTakeSnapshot : true
       }

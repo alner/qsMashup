@@ -89,8 +89,14 @@ export default function DragDropSupport(spec = {}) {
 
       componentWillUnmount() {
         this.removeObject();
-        if(this.qlikDragDropService)
+        console.log('WillUnmount');
+        if(this.qlikDragDropService) {
           this.qlikDragDropService.unregisterDropTarget(this);
+        }
+
+        this.targetRect = null;
+        this.drawRect = null;
+        this.cellRect = null;
       }
 
       componentDidUpdate() {
@@ -148,12 +154,11 @@ export default function DragDropSupport(spec = {}) {
       }
 
       repaintObject(){
-        if(this.state.object) {
-          let r = this.getRect();
-          if(!isEqual(this.cellRect, r)) {
-            this.setupDragDropRect();
+        let r = this.getRect();
+        if(!isEqual(this.cellRect, r)) {
+          this.setupDragDropRect();
+          if(this.state.object)
             this.qlik.resize(this.state.object);
-          }
         }
       }
 
