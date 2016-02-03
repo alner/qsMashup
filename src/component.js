@@ -1,16 +1,24 @@
+import "babel-polyfill";
 import loadCSS from './loadcss';
 
 const global = window;
 const define = (window && window.define) || define;
-const dependencies = ['module', 'js/qlik', 'general.utils/drag-and-drop-service'];
+const dependencies = [
+  'module',
+  'js/qlik',
+  'general.utils/drag-and-drop-service',
+  'client.utils/state'
+];
 
 define(dependencies,
-  function(module, qlik, qlikDragDropService){
+  function(module, qlik, qlikDragDropService, State){
     const ROOT_URI = module.uri.split('/').slice(0, -1).join('/');
     const DEPENDENCIES_TO_LOAD = {
-      React: `${ROOT_URI}/vendors/react.min`
+      React: `${ROOT_URI}/vendors/react.min`,
+      //ReactDOM: `${ROOT_URI}/vendors/react-dom.min`
     };
     loadCSS(`${ROOT_URI}/styles.css`);
+    //loadCSS(`${ROOT_URI}/vendors/jquery-ui.min.css`);
 
     let initialProperties = require('./initialProperties');
     let definition = require('./definition');
@@ -18,8 +26,9 @@ define(dependencies,
     let {lazyLoader, isDependenciesLoaded} = require('./lazyLoad');
 
     const injectAndCallPaintMethod = function(context, method, ...args) {
-          context.paint = method;
-          context.paint(...args);
+        console.log('injectAndCallPaintMethod', window);
+        context.paint = method;
+        context.paint(...args);
     };
     // load into the global context required libraries using provided "map" object
     const lazyLoad = lazyLoader(global,
@@ -35,10 +44,11 @@ define(dependencies,
         if(!layout.services) layout.services = {};
         layout.services.qlik = qlik;
         layout.services.qlikDragDropService = qlikDragDropService;
+        layout.services.State = State;
       }
 
       if(!isDependenciesLoaded(global, DEPENDENCIES_TO_LOAD))
-        lazyLoad(self, paintMethod, $element, layout);
+        lazyLoad(global, paintMethod, $element, layout); // self
       else
         injectAndCallPaintMethod(self, paintMethod, $element, layout);
     };

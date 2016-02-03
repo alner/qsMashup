@@ -1,5 +1,7 @@
 import React from 'react';
+import ReactDOM from 'react/lib/ReactDOM';
 import isEqual from 'lodash.isequal';
+import assign from 'lodash.assign';
 import Component from '../components/base';
 
 // used in the DragDropSupport below
@@ -19,6 +21,7 @@ function start(drag) {
     // cellRect : rect,
     // drop : dropFn(splitCell, sheet)
     drag.registerDropRect(this);
+    this.setupDragDropRect && this.setupDragDropRect();
   }
 }
 
@@ -35,6 +38,8 @@ function end() {
 * end(info) {}
 * drop(info) {}
 * placeClassName - the element class name where sense object should be injected
+* onDropGridCellHandler(item) - grid cell drop handler
+* onDropLibraryItemHandler(item) - libraryitem drop handler
 */
 export default function DragDropSupport(spec = {}) {
   return function AddDragDropSupport(DecorateComponent) {
@@ -50,7 +55,11 @@ export default function DragDropSupport(spec = {}) {
           isObjectInjected: false,
           itemid: null, // item id
           item: null, // dropped item info
-          object: null // injected sense object
+          object: null, // injected sense object
+          accept: {
+            libraryitem: true,
+            gridcell: true
+          }
         }
 
         // qlik services. see component.js
@@ -62,14 +71,30 @@ export default function DragDropSupport(spec = {}) {
 
         // accept only objects of specified type
         this.accept = {
-          libraryitem: () => { return true },
-          gridcell: () => { return true }
+          libraryitem: () => { return this.state.accept.libraryitem },
+          gridcell: () => { return this.state.accept.gridcell }
         };
 
         // drop handlers
+        let dropGridCellHandler = this.onDropGridCellHandler;
+        if (!dropGridCellHandler)
+          // default dropgridcell handler
+          dropGridCellHandler = (item) => {
+            console.log(item);
+            this.setState( { item: item, itemid: item.cell.id } );
+          };
+
+        let dropLibraryItemHandler = this.onDropLibraryItemHandler;
+        if (!dropLibraryItemHandler)
+          // default libraryitem drop handler
+          dropLibraryItemHandler = (item) => {
+            console.log(item);
+            this.setState( { item: item, itemid: item.item.id } );
+          };
+
         this.drop = {
-          gridcell: (item) => { console.log(item); this.setState( { item: item, itemid: item.cell.id } ); },
-          libraryitem: (item) => { console.log(item); this.setState( { item: item, itemid: item.item.id } ); }
+          gridcell: dropGridCellHandler,
+          libraryitem: dropLibraryItemHandler
         };
 
         // priority
@@ -79,7 +104,39 @@ export default function DragDropSupport(spec = {}) {
         this.end = end.bind(this);
       }
 
+      setAcceptTo(value) {
+        this.setState({
+          accept: {
+            libraryitem: value,
+            gridcell: value
+          }
+        })
+      }
+
       componentDidMount() {
+        let self = this;
+        let element = ReactDOM.findDOMNode(this);
+        $(element).draggable({
+          start() {
+            self.setAcceptTo(false);
+          },
+          stop() {
+            console.log('drag stop');
+            self.setupDragDropRect();
+            self.setAcceptTo(true);
+          }
+        });
+        $(element).resizable({
+          start() {
+            self.setAcceptTo(false);
+          },
+          stop() {
+            console.log('resize stop');
+            self.setupDragDropRect();
+            self.setAcceptTo(true);
+          }
+        });
+
         if(this.qlikDragDropService) {
           this.setupDragDropRect();
           this.qlikDragDropService.registerDropTarget(this);
@@ -106,18 +163,26 @@ export default function DragDropSupport(spec = {}) {
 
       render() {
         const DecoratedComponent = this.DecoratedComponent;
-        return <DecoratedComponent {...this.props} item={this.state.item} ref='child'/>;
+        return <DecoratedComponent {...this.props} item={this.state.item} />;
       }
 
       // Drag and drop support methods and props
       // "libraryitem", "gridcell",...?
       getRect(){
-        let br = React.findDOMNode(this.refs.child).getBoundingClientRect();
+        //console.log(this.child);
+        console.log('get rect');
+        let element = ReactDOM.findDOMNode(this);
+        let br = element.getBoundingClientRect();
+        console.log(br);
+        console.warn('можно передавать параметр в spec, ссылку на контейнер');
+        let $parent = $(element).parent();
+        console.log('parent', $parent);
+        //React.findDOMNode(this.refs.child).getBoundingClientRect();
         return {
-          left: br.left,
-          top: br.top,
-          right: br.right || (br.left + br.width),
-          bottom: br.bottom || (br.top + br.height)
+          left: br.left - $parent.scrollLeft(),
+          top: br.top - $parent.scrollTop(),
+          right: (br.right - $parent.scrollLeft()) || (br.left - $parent.scrollLeft() + br.width),
+          bottom: (br.bottom - $parent.scrollTop()) || (br.top - $parent.scrollTop() + br.height)
         }
       }
 
@@ -131,19 +196,17 @@ export default function DragDropSupport(spec = {}) {
       }
 
       getPlaceholderElement() {
-        let element = React.findDOMNode(this);
+        let element = ReactDOM.findDOMNode(this);
         let placeholder = element.getElementsByClassName(this.placeClassName || "placeholder")[0];
         if(!placeholder) placeholder = element;
         return element;
       }
 
       injectObject(){
-        console.log('injectObject');
         if(!this.state.isObjectInjected && this.state.itemid) {
           let id = this.state.itemid;
           this.removeObject();
           let placeElement = this.getPlaceholderElement();
-          console.log(placeElement);
           if(placeElement) {
             this.qlik.currApp().getObject(placeElement, id).then((object) => {
               this.setState({ object: object,  isObjectInjected: true});
@@ -173,7 +236,7 @@ export default function DragDropSupport(spec = {}) {
     }
 
     // assign sense dnd support method
-    Object.assign(DragDropContainer.prototype, spec);
+    assign(DragDropContainer.prototype, spec);
 
     return DragDropContainer;
   }

@@ -10,7 +10,7 @@ var rename = require('gulp-rename');
 var watch = require('gulp-watch');
 var path = require('path');
 var LessPluginAutoPrefix = require('less-plugin-autoprefix');
-var autoprefix= new LessPluginAutoPrefix({ browsers: ["last 2 versions"] });
+var autoprefix= new LessPluginAutoPrefix({ browsers: ["last 4 versions"] });
 
 var startDevServer = require('./server').start;
 var build = require('./server').build;

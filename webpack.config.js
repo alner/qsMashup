@@ -21,8 +21,13 @@ var config = {
   },
   externals: {
     "react": "React",
+    "react-dom": "ReactDOM",
     "js/qlik": "Qlik"
   },
+  /*
+  "react": "React",
+  "react-dom": "ReactDOM",
+  */
   plugins: [
     //new webpack.HotModuleReplacementPlugin()
   ],
@@ -30,7 +35,7 @@ var config = {
     modulesDirectories: ['node_modules', 'bower_components']
   },
   module: {
-    noParse: ["react", "js/qlik"],
+    noParse: ["react", "react.min", "react-dom", "react-dom.min", "js/qlik"], // "react", "react-dom",
     loaders: [
       {
         test: /\.jsx?$/,
